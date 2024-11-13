@@ -86,11 +86,11 @@ export const startServe = (option) => {
       }else if(body && body.TypeName === 'ModContacts'){ // 好友消息， 群信息变更
         // 消息hanlder
         const id = body.Data?.UserName?.string||''
-        if(id.endsWith('@chatroom')){ // 群消息
+        if(id.endsWith('@chatroom') && body.Data?.ImgFlag!=1){ // 群消息
+          const oldInfo = db.findOneByChatroomId(id)
+          const newInfo = await getRoomLiveInfo(id)
           // 如果成员变动则会更换头像，
-          if(body.Data?.ImgFlag==2){
-            const oldInfo = db.findOneByChatroomId(id)
-            const newInfo = await getRoomLiveInfo(id)
+            
             // 比较成员列表
             const obj = compareMemberLists(oldInfo.memberList, newInfo.memberList)
             if(obj.added.length > 0){
@@ -105,7 +105,6 @@ export const startServe = (option) => {
                 roomEmitter.emit(`leave:${id}`, new Room(newInfo), member)
               })
             }
-          }
           if(body.Data.NickName.string !== oldInfo.nickName){ // 群名称变动
             roomEmitter.emit(`topic:${id}`, new Room(newInfo), body.Data.NickName.string, oldInfo.nickName)
           }
