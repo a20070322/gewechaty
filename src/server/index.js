@@ -103,10 +103,11 @@ export const startServe = (option) => {
               roomEmitter.emit(`leave:${id}`, new Room(newInfo), member)
             })
           }
-          
+          roomEmitter.emit(`update:${id}`, newInfo, oldInfo)
           if(body.Data.NickName.string !== oldInfo.nickName){ // 群名称变动
             roomEmitter.emit(`topic:${id}`, new Room(newInfo), body.Data.NickName.string, oldInfo.nickName)
           }
+          roomEmitter.emit(`update:${id}`, newInfo, oldInfo)
           db.updateRoom(id, newInfo)
         }
       }
