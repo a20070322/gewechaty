@@ -107,6 +107,7 @@ export const startServe = (option) => {
           if(body.Data.NickName.string !== oldInfo.nickName){ // 群名称变动
             roomEmitter.emit(`topic:${id}`, new Room(newInfo), body.Data.NickName.string, oldInfo.nickName)
           }
+          roomEmitter.emit(`update:${id}`, newInfo, oldInfo)
           db.updateRoom(id, newInfo)
         }
       }
