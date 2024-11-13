@@ -87,23 +87,25 @@ export const startServe = (option) => {
         // 消息hanlder
         const id = body.Data?.UserName?.string||''
         if(id.endsWith('@chatroom')){ // 群消息
-          const oldInfo = db.findOneByChatroomId(id)
-          const newInfo = await getRoomLiveInfo(id)
-          // 比较成员列表
-          const obj = compareMemberLists(oldInfo.memberList, newInfo.memberList)
-          if(obj.added.length > 0){
-            obj.added.map((item) => {
-              const member = new Contact(item)
-              roomEmitter.emit(`join:${id}`, new Room(newInfo), member, member.inviterUserName)
-            })
+          // 如果成员变动则会更换头像，
+          if(body.Data?.ImgFlag==2){
+            const oldInfo = db.findOneByChatroomId(id)
+            const newInfo = await getRoomLiveInfo(id)
+            // 比较成员列表
+            const obj = compareMemberLists(oldInfo.memberList, newInfo.memberList)
+            if(obj.added.length > 0){
+              obj.added.map((item) => {
+                const member = new Contact(item)
+                roomEmitter.emit(`join:${id}`, new Room(newInfo), member, member.inviterUserName)
+              })
+            }
+            if(obj.removed.length > 0){
+              obj.removed.map((item) => {
+                const member = new Contact(item)
+                roomEmitter.emit(`leave:${id}`, new Room(newInfo), member)
+              })
+            }
           }
-          if(obj.removed.length > 0){
-            obj.removed.map((item) => {
-              const member = new Contact(item)
-              roomEmitter.emit(`leave:${id}`, new Room(newInfo), member)
-            })
-          }
-          
           if(body.Data.NickName.string !== oldInfo.nickName){ // 群名称变动
             roomEmitter.emit(`topic:${id}`, new Room(newInfo), body.Data.NickName.string, oldInfo.nickName)
           }
